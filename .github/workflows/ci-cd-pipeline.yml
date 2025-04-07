@@ -1,59 +1,37 @@
-name: CI/CD Pipeline with SonarCloud
+stages:
+  - build
+  - test
+  - sastscan
 
-on:
-  push:
-    branches:
-      - main  # Déclenche le pipeline lors d'un push sur la branche 'main'
-  pull_request:
-    branches:
-      - main  # Déclenche le pipeline lors d'une PR vers la branche 'main'
+# Étape build
+build:
+  stage: build
+  image: maven:3.8.5-openjdk-17-slim
+  script:
+    - mvn clean package
+  tags:
+    - docker
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# Étape test
+test:
+  stage: test
+  image: maven:3.8.5-openjdk-17-slim
+  script:
+    - mvn clean test
+  tags:
+    - docker
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Java with Maven
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17'
-
-    - name: Build project with Maven
-      run: mvn clean package
-
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Java with Maven
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17'
-
-    - name: Run tests with Maven
-      run: mvn clean test
-
-  sastscan:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up SonarCloud scanner
-      uses: sonarsource/sonarcloud-github-action@v1
-      with:
-        sonarcloud-token: ${{ secrets.SONAR_TOKEN }}
-
-    - name: Analyze with SonarCloud
-      run: mvn clean verify sonar:sonar \
+# Étape SAST (analyse SonarCloud)
+sastscan:
+  stage: sastscan
+  image: maven:3.8.5-openjdk-17-slim
+  script:
+    - curl -sSLo sonar-scanner.zip https://github.com/SonarSource/sonar-scanner-cli/releases/download/4.6.2.2472/sonar-scanner-cli-4.6.2.2472-linux.zip
+    - unzip sonar-scanner.zip
+    - ./sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner \
         -Dsonar.projectKey=8f51e9d87c71fd38871a7c0267bb4b10acd24b5b \
         -Dsonar.organization=rubenribeiro91 \
         -Dsonar.host.url=https://sonarcloud.io/ \
-        -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        -Dsonar.login=14ad4818f21384add02744d3f9e34d
+  tags:
+    - docker
