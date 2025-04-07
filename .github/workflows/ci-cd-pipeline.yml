@@ -53,7 +53,7 @@ jobs:
 
     - name: Analyze with SonarCloud
       run: mvn clean verify sonar:sonar \
-        -Dsonar.projectKey=gitLabdevsecopsintegration \
-        -Dsonar.organization=gitlabdevsecopsintegrtion \
+        -Dsonar.projectKey=8f51e9d87c71fd38871a7c0267bb4b10acd24b5b \
+        -Dsonar.organization=rubenribeiro91 \
         -Dsonar.host.url=https://sonarcloud.io/ \
         -Dsonar.login=${{ secrets.SONAR_TOKEN }}
