@@ -1,0 +1,59 @@
+name: CI/CD Pipeline with SonarCloud
+
+on:
+  push:
+    branches:
+      - main  # Déclenche le pipeline lors d'un push sur la branche 'main'
+  pull_request:
+    branches:
+      - main  # Déclenche le pipeline lors d'une PR vers la branche 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Java with Maven
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+
+    - name: Build project with Maven
+      run: mvn clean package
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Java with Maven
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+
+    - name: Run tests with Maven
+      run: mvn clean test
+
+  sastscan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up SonarCloud scanner
+      uses: sonarsource/sonarcloud-github-action@v1
+      with:
+        sonarcloud-token: ${{ secrets.SONAR_TOKEN }}
+
+    - name: Analyze with SonarCloud
+      run: mvn clean verify sonar:sonar \
+        -Dsonar.projectKey=gitLabdevsecopsintegration \
+        -Dsonar.organization=gitlabdevsecopsintegrtion \
+        -Dsonar.host.url=https://sonarcloud.io/ \
+        -Dsonar.login=${{ secrets.SONAR_TOKEN }}
